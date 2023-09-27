@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 interface ImageCarouselProps {
   images: string[];
@@ -27,6 +27,38 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({
   const carouselRef = useRef<HTMLDivElement>(null);
   const currentThreshHold = useRef<number>(1);
   const loadedImagesSetRef = useRef(new Set<string>());
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    setIsDragging(true);
+    setStartX(e.pageX - carouselRef.current!.offsetLeft);
+    setScrollLeft(carouselRef.current!.scrollLeft);
+    carouselRef.current!.style.scrollSnapType = "none"; // Disable scroll snapping during drag
+  };
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    const x = e.pageX - carouselRef.current!.offsetLeft;
+    const walk = (x - startX) * 2; // *2 to make the drag more pronounced
+    carouselRef.current!.scrollLeft = scrollLeft - walk;
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    carouselRef.current!.style.scrollSnapType = "x mandatory"; // Re-enable scroll snapping after a slight delay
+  };
+
+  useEffect(() => {
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isDragging, startX, scrollLeft]);
 
   const preloadImages = (imageUrls: string[]) => {
     imageUrls.forEach((url) => {
@@ -106,6 +138,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({
     <div
       ref={carouselRef}
       className="flex snap-x snap-mandatory h-full w-full mx:auto overflow-x-auto overscroll-y-none"
+      onMouseDown={handleMouseDown}
     >
       <img
         src={images[images.length - 1]}
