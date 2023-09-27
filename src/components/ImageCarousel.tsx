@@ -26,6 +26,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({
 }) => {
   const carouselRef = useRef<HTMLDivElement>(null);
   const currentThreshHold = useRef<number>(1);
+  const timeoutRef = useRef<number | null>(null);
   const loadedImagesSetRef = useRef(new Set<string>());
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
@@ -35,6 +36,13 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({
     setIsDragging(true);
     setStartX(e.pageX - carouselRef.current!.offsetLeft);
     setScrollLeft(carouselRef.current!.scrollLeft);
+
+    // Clear the timeout if another drag event starts
+    if (timeoutRef.current !== null) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+
     carouselRef.current!.style.scrollSnapType = "none"; // Disable scroll snapping during drag
   };
 
@@ -48,7 +56,27 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({
 
   const handleMouseUp = () => {
     setIsDragging(false);
-    carouselRef.current!.style.scrollSnapType = "x mandatory"; // Re-enable scroll snapping after a slight delay
+    document.removeEventListener("mousemove", handleMouseMove);
+    document.removeEventListener("mouseup", handleMouseUp);
+
+    if (carouselRef.current) {
+      const containerWidth = carouselRef.current.clientWidth;
+      const currentScrollPosition = carouselRef.current.scrollLeft;
+      const imageIndex = Math.round(currentScrollPosition / containerWidth);
+      const snapTo = imageIndex * containerWidth;
+
+      carouselRef.current.scrollTo({
+        left: snapTo,
+        behavior: "smooth",
+      });
+
+      // Use setTimeout to delay the reapplication of scrollSnapType
+      timeoutRef.current = window.setTimeout(() => {
+        if (carouselRef.current) {
+          carouselRef.current.style.scrollSnapType = "x mandatory";
+        }
+      }, 600);
+    }
   };
 
   useEffect(() => {
