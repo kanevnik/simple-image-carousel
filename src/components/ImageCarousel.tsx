@@ -86,6 +86,8 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
     };
+
+    // eslint-disable-next-line
   }, [isDragging, startX, scrollLeft]);
 
   const preloadImages = (imageUrls: string[]) => {
@@ -102,9 +104,11 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({
     if (images.length === 0) return;
 
     const fromStart = images.slice(0, PRE_LOAD_IMAGES);
-    const fromEnd = images.slice(-2);
+    const fromEnd = images.slice(-PRE_LOAD_IMAGES);
     const combined = [...fromStart, ...fromEnd];
     preloadImages(Array.from(new Set<string>(combined)));
+
+    // eslint-disable-next-line
   }, []);
 
   useEffect(() => {
@@ -113,6 +117,8 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({
         (carouselRef.current.firstChild as HTMLElement)?.clientWidth || 0;
       carouselRef.current.scrollLeft = imageWidth;
     }
+
+    // eslint-disable-next-line
   }, []);
 
   useEffect(() => {
