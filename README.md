@@ -62,7 +62,7 @@ function YourComponent() {
 
 ## Notes
 
-- This carousel is not a drag-and-drop component. For web, it uses horizontal scrolling, and for mobile, it supports swipe gestures.
+- This carousel can use drag-and-drop and scroll.
 - If the goal is to create a slot reel, the approach would differ.
 - Possible improvements include adding loading indicators, index indicators, more customization options, and abstracting the carousel to accept components instead of just images.
 
